@@ -1,5 +1,10 @@
-// namespace my App (might use later)
+// namespace App (might use later)
 var App = Object.create(null);
+
+var CoinPouch = Object.create(null);
+CoinPouch.blueCoins = 0;
+CoinPouch.redCoins  = 0;
+CoinPouch.gold      = 25;
 
 var Fire = Object.create(null);
 
@@ -46,6 +51,19 @@ var headsOrTails = function() {
   return result;
 };
 
+var moveSimiliar = function(color, yMovement) {
+  // for each coin in coins
+  // if coins[i].attrs.fill = 
+  $('circle').each( function( index, element ){
+    if ($(this).attr('fill') === color) {
+      var newYPosition = Number($(this).attr('cy')) + yMovement;
+      $(this).attr('cy', newYPosition);
+    }
+  });
+
+  return;
+};
+
 var flipCoin = function(endX, endY, coinNum) {
   // determine which color RED or BLUE
   var result = headsOrTails();
@@ -61,24 +79,44 @@ var flipCoin = function(endX, endY, coinNum) {
       return;
   };
 
+/* This is borked for now Feb 03, 2014 */
+  var addHoverHandler = function (color) {
+    coin.mousedown(
+      function(){
+        console.log(this);
+        moveSimiliar(color, -20);
+        this.attr({fill: '#fff999'});
+      });
+    coin.mouseup(
+      function() {
+        moveSimiliar(color, 20);
+        this.attr({fill: color});
+      });
+    coins.push(coin);
+  };
+
   if(result === 0) {
     // color is BLUE
+    CoinPouch.blueCoins += 1;
     drawCoin('#79b1b3');
+    addHoverHandler('#79b1b3');
   } else if (result === 1) {
     // color is RED
+    CoinPouch.redCoins += 1;
     drawCoin('#bf4c40');
+    addHoverHandler('#bf4c40');
   } else {
     console.log('oops ERROR');
   }
 
-  console.log(coinNum * 100);
+  
 
   // coin animations callback function
   var animateYo = function() {
     coin.animate({cx: endX, cy: endY},500, 'easeOut');
     return;
   };
-  
+
   // animate coin coming up and flipping
   // interval increases based on coin number so animations cascade and it looks nice
   window.setTimeout(animateYo, coinNum * 100);
@@ -98,7 +136,9 @@ $(document).ready(function () {
       selectedColor;
   // Get gold coins from firebase
 
-  //
+
+  
+
 
   // call createCoins test 5
   // createCoins(250, 100, 5);
@@ -108,24 +148,37 @@ $(document).ready(function () {
 
   $('#reset-button').on('click', function() {
     // Reset Gold
-    Fire.goldRef.set({'gold': 25});
+    Fire.goldRef.set({'gold': CoinPouch.gold});
 
     // reset screen
     paper.clear();
     lastY = 50;
     lastX = 50;
     numCoins = 0;
+
+    // reset CoinPouch
+    CoinPouch.blueCoins = 0;
+    CoinPouch.redCoins  = 0;
+
+    // maybe dont reset gold
+    CoinPouch.gold      = 0;
   });
 
   // Event handler on 'Play Game'- Flips 25 coins
   $('#play-game').on('click', function() {
     // Flip 25 coins
 
-    // if coin
     
     // Clear screen, reset number of coins
     paper.clear();
     // Make sure color is selected
+    var selected = $('input[type="radio"][name="colorChoice"]:checked');
+    if (selected.length > 0) {
+      selectedColor = selected.val();
+    } else {
+      console.log('pick a color first');
+      return;
+    }
 
     for (var i=0; i<25; i+=1) {
       // if 5 coins in a column make new column (aka move starting x coordinate for now)
@@ -143,6 +196,32 @@ $(document).ready(function () {
     // reset lastY and lastX
     lastY = 50;
     lastX = 50;
+
+    // count up wins/losses
+    if (selectedColor === 'blue') {
+      // count up blue
+      CoinPouch.gold += CoinPouch.blueCoins;
+      CoinPouch.gold -= CoinPouch.redCoins;
+      console.log(CoinPouch.gold);
+
+    } else if (selectedColor === 'red') {
+      // count up red
+      CoinPouch.gold -= CoinPouch.blueCoins;
+      CoinPouch.gold += CoinPouch.redCoins;
+      console.log(CoinPouch.gold);
+
+    } else {
+      // something terrible happened!
+      console.log('error!');
+    }
+
+    // reset CoinPouch
+    CoinPouch.blueCoins = 0;
+    CoinPouch.redCoins  = 0;
+
+    // update Gold count display
+    $('#gold-amount').text(CoinPouch.gold);
+
   });
 
   /* Ignore this, not doing individual flips for now
