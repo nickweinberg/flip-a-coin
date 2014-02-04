@@ -46,7 +46,7 @@ var headsOrTails = function() {
   return result;
 };
 
-var flipCoin = function(endX, endY) {
+var flipCoin = function(endX, endY, coinNum) {
   // determine which color RED or BLUE
   var result = headsOrTails();
   
@@ -71,9 +71,17 @@ var flipCoin = function(endX, endY) {
     console.log('oops ERROR');
   }
 
+  console.log(coinNum * 100);
 
+  // coin animations callback function
+  var animateYo = function() {
+    coin.animate({cx: endX, cy: endY},500, 'easeOut');
+    return;
+  };
+  
   // animate coin coming up and flipping
-  coin.animate({cx: endX, cy: endY},500, 'easeOut');
+  // interval increases based on coin number so animations cascade and it looks nice
+  window.setTimeout(animateYo, coinNum * 100);
 
   // save result to firebase
 
@@ -115,17 +123,30 @@ $(document).ready(function () {
 
     // if coin
     
-    // Clear screen
+    // Clear screen, reset number of coins
     paper.clear();
-
     // Make sure color is selected
 
     for (var i=0; i<25; i+=1) {
-      console.log(i);
+      // if 5 coins in a column make new column (aka move starting x coordinate for now)
+      if (i % 5 == 0) {
+        lastX += 100;
+        lastY  = 50;
+        flipCoin(lastX, lastY, i);
+      } else {
+        lastY += 30;
+        flipCoin(lastX, lastY, i);
+        
+      }
     }
+
+    // reset lastY and lastX
+    lastY = 50;
+    lastX = 50;
   });
 
-  /* Ignore this, not doing individual flips for now*/
+  /* Ignore this, not doing individual flips for now
+  
   $('#flip-coin').on('click', function() {
     // Flips a coin
 
@@ -151,6 +172,7 @@ $(document).ready(function () {
       // function should get called when last coin is set
     }
   });
-
+  
+  */
 
 });
