@@ -1,0 +1,11 @@
+{
+  "name": "my-proj",
+  "private": true,
+  "dependencies": {
+    "sass-bootstrap": "~3.0.0",
+    "modernizr": "~2.6.2",
+    "jquery": "~1.10.2",
+    "raphael": "~2.1.2"
+  },
+  "devDependencies": {}
+}
